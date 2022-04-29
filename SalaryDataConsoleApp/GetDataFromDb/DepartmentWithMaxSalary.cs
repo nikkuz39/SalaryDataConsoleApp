@@ -6,12 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using SalaryDataConsoleApp.Models;
 
 namespace SalaryDataConsoleApp.GetDataFromDb
 {
     public class DepartmentWithMaxSalary
     {
+        private readonly ILogger logger;
+        public DepartmentWithMaxSalary(ILogger<DepartmentWithMaxSalary> log)
+        {
+            logger = log;
+        }
+
         private String GetDatabaseConnectionString()
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -22,7 +29,7 @@ namespace SalaryDataConsoleApp.GetDataFromDb
             return configuration.GetConnectionString("DefaultConnection");
         }
 
-        public List<Employee> DepartmentWithHighestSalary()
+        private List<Employee> DepartmentWithHighestSalary()
         {
             List<Employee> employees = new List<Employee>();
 
@@ -63,10 +70,24 @@ namespace SalaryDataConsoleApp.GetDataFromDb
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    logger.LogError(ex, "Method 'GetDepartmentWithMaxSalary'");
                     return employees;
                 }
             }
+        }
+
+        public void GetDepartmentWithMaxSalary()
+        {
+            logger.LogInformation("Call method 'GetDepartmentWithMaxSalary'");
+
+            var employeesList_DepartmentWithMaxSalary = new List<Employee>();
+            employeesList_DepartmentWithMaxSalary = DepartmentWithHighestSalary();
+
+            Console.WriteLine("Department with highest salary:");
+            Console.WriteLine($"{"Department",-10} {"Salary",-10} {"Name",-10}");
+
+            foreach (Employee employee in employeesList_DepartmentWithMaxSalary)
+                Console.WriteLine($"{employee.Department.Name,-10} {employee.Salary,-10} {employee.Name,-10}");
         }
     }
 }

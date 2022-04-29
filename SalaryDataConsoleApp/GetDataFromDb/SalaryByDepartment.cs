@@ -6,12 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using SalaryDataConsoleApp.Models;
 
 namespace SalaryDataConsoleApp.GetDataFromDb
 {
     public class SalaryByDepartment
     {
+        private readonly ILogger logger;
+        public SalaryByDepartment(ILogger<SalaryByDepartment> log)
+        {
+            logger = log;
+        }
+
         private String GetDatabaseConnectionString()
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -22,7 +29,7 @@ namespace SalaryDataConsoleApp.GetDataFromDb
             return configuration.GetConnectionString("DefaultConnection");
         }
 
-        public List<Employee> SalaryByDepartment_withCheff()
+        private List<Employee> SalaryByDepartment_withCheff()
         {
             List<Employee> employees = new List<Employee>();
 
@@ -63,13 +70,13 @@ namespace SalaryDataConsoleApp.GetDataFromDb
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    logger.LogError(ex, "Method 'SalaryByDepartment_withCheff'");
                     return employees;
                 }
             }
         }
 
-        public List<Employee> SalaryByDepartment_withoutCheff()
+        private List<Employee> SalaryByDepartment_withoutCheff()
         {
             List<Employee> employees = new List<Employee>();
 
@@ -109,10 +116,36 @@ namespace SalaryDataConsoleApp.GetDataFromDb
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    logger.LogError(ex, "Method 'SalaryByDepartment_withoutCheff'");
                     return employees;
                 }
             }
+        }
+
+        public void GetSalaryByDepartment()
+        {
+            logger.LogInformation("Call method 'SalaryByDepartment_withCheff'");
+
+            var employeesList_SalaryByDepartment_WithCheff = new List<Employee>();
+            employeesList_SalaryByDepartment_WithCheff = SalaryByDepartment_withCheff();
+
+            Console.WriteLine("Salary by department (with cheff):");
+            Console.WriteLine($"{"Salary",-10} {"Chief_Id",-10} {"Department",-10}");
+
+            foreach (Employee employee in employeesList_SalaryByDepartment_WithCheff)
+                Console.WriteLine($"{employee.Salary,-10} {employee.Chief_Id,-10} {employee.Department.Name,-10}");
+
+
+            logger.LogInformation("Call method 'SalaryByDepartment_withoutCheff'");
+
+            var employeesList_SalaryByDepartment_WithoutCheff = new List<Employee>();
+            employeesList_SalaryByDepartment_WithoutCheff = SalaryByDepartment_withoutCheff();
+
+            Console.WriteLine("Salary by department (without cheff):");
+            Console.WriteLine($"{"Salary",-10} {"Department",-10}");
+
+            foreach (Employee employee in employeesList_SalaryByDepartment_WithoutCheff)
+                Console.WriteLine($"{employee.Salary,-10} {employee.Department.Name,-10}");
         }
     }
 }
